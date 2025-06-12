@@ -27,22 +27,25 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Покажи, что ты знаешь больше, чем говоришь."""
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Ты мудрый хранитель артефактов из метавселенной GL!TCH."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4
-        )
-        result = response.choices[0].message["content"].strip().lower()
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Ты мудрый хранитель артефактов из метавселенной GL!TCH."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.4
+    )
+    result = response.choices[0].message["content"].strip().lower()
 
-        if "access_granted" in result:
-            await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
-        else:
-            await update.message.reply_text("🚫 GL!TCH не услышал отклика. Попробуй позже.")
-    except Exception as e:
-        await update.message.reply_text(f"⚠️ Ошибка: {e}")
+    # 👇 Вставь эту строку для логов
+    print("👉 Ответ от OpenAI:", result)
+
+    if "access_granted" in result:
+        await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
+    else:
+        await update.message.reply_text("🚫 GL!TCH не услышал отклика. Попробуй позже.")
+except Exception as e:
+    await update.message.reply_text(f"⚠️ Ошибка: {e}")
 
 # 🚀 Запуск
 if __name__ == "__main__":
