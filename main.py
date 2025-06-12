@@ -50,3 +50,20 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_access))
     app.run_polling()
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram import Update
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")  # или переменная из окружения
+
+# Команда /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
+
+# Обработка любого текста
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔴 GL!TCH не услышал отклика. Попробуй позже.")
+
+app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+app.run_polling()
