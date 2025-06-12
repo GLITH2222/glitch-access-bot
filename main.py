@@ -7,18 +7,19 @@ from telegram.ext import (
     CommandHandler, MessageHandler, filters
 )
 
-# 🔑 Ключи
+# 🔑 Получение токенов из переменных окружения
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DAO_LINK = "https://t.me/+example_dao_invite"
+DAO_LINK = "https://t.me/+example_dao_invite"  # Замени на свою ссылку, если нужно
 
+# Настройка OpenAI API
 openai.api_key = OPENAI_API_KEY
 
-# 🟢 Команда /start
+# Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
 
-# ✅ Проверка фразы через OpenAI
+# Обработка пользовательского ввода
 async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     prompt = f"""Ты — голос цифрового артефакта GL!TCH.
@@ -36,6 +37,7 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
             temperature=0.4
         )
         result = response.choices[0].message["content"].strip().lower()
+
         if "access_granted" in result:
             await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
         else:
@@ -43,27 +45,10 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"⚠️ Ошибка: {e}")
 
-# 🚀 Запуск
+# 🚀 Запуск бота
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_access))
     app.run_polling()
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from telegram import Update
-
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")  # или переменная из окружения
-
-# Команда /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
-
-# Обработка любого текста
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔴 GL!TCH не услышал отклика. Попробуй позже.")
-
-app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-app.run_polling()
