@@ -7,26 +7,24 @@ from telegram.ext import (
     CommandHandler, MessageHandler, filters
 )
 
-# 🔐 Токены из переменных окружения
+# 🔑 Токены
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DAO_LINK = "https://t.me/+example_dao_invite"
+DAO_LINK = "https://t.me/+example_dao_invite"  # замени на свой
 
-# 🔧 Настройка OpenAI
 openai.api_key = OPENAI_API_KEY
 
-# 🔁 Команда /start
+# 🟢 Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
 
-# 💬 Обработка сообщений
+# 🧠 AI ответ
 async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     prompt = f"""Ты — голос цифрового артефакта GL!TCH.
 Пользователь сказал: "{user_input}"
 Ответь загадочно и атмосферно, но кратко.
-Покажи, что ты знаешь больше, чем говоришь.
-"""
+Покажи, что ты знаешь больше, чем говоришь."""
 
     try:
         response = openai.ChatCompletion.create(
@@ -46,17 +44,12 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"⚠️ Ошибка: {e}")
 
-# 🚀 Запуск через webhook для Render
+# 🚀 Запуск
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_access))
 
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8443)),
-        url_path=TELEGRAM_TOKEN,
-        webhook_url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TELEGRAM_TOKEN}"
-    )
+    app.run_polling()
