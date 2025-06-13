@@ -1,35 +1,34 @@
 import logging
 import os
-import openai
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, MessageHandler,
-    ContextTypes, filters
+    ApplicationBuilder, ContextTypes,
+    CommandHandler, MessageHandler, filters
 )
+from openai import OpenAI
 
-# 🔑 Переменные окружения
+# 🔐 Токены из переменных окружения
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DAO_LINK = "https://t.me/+example_dao_invite"  # замени на свою ссылку
+DAO_LINK = "https://t.me/+example_dao_invite"
 
-openai.api_key = OPENAI_API_KEY
+# Инициализация OpenAI-клиента
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-# 🚀 Команда /start
+# 🟣 Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
 
-# 🧠 Обработка текста через OpenAI
+# 🧠 Обработка текста с OpenAI
 async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
-    print("📨 Пользователь написал:", user_input)
-
     prompt = f"""Ты — голос цифрового артефакта GL!TCH.
 Пользователь сказал: "{user_input}"
 Ответь загадочно и атмосферно, но кратко.
 Покажи, что ты знаешь больше, чем говоришь."""
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты мудрый хранитель артефактов из метавселенной GL!TCH."},
@@ -37,18 +36,21 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ],
             temperature=0.4
         )
-        result = response.choices[0].message["content"].strip().lower()
+        result = response.choices[0].message.content.strip()
+
+        # 👉 Лог в консоль (для Render)
         print("👉 Ответ от OpenAI:", result)
 
-        if "access_granted" in result:
+        if "access_granted" in result.lower():
             await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
         else:
             await update.message.reply_text("🚫 GL!TCH не услышал отклика. Попробуй позже.")
-    except Exception as e:
-        print("❌ Ошибка OpenAI:", e)
-        await update.message.reply_text(f"⚠️ Ошибка: {e}")
 
-# 🏁 Запуск
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Ошибка: {e}")
+        print("❌ OpenAI Error:", e)
+
+# 🚀 Запуск бота
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
