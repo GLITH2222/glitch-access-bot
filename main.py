@@ -1,28 +1,21 @@
-import logging
 import os
 import openai
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, MessageHandler,
-    ContextTypes, filters
+    ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 )
 
-# 🔐 Токены из окружения
-TELEGRAM_TOKEN = os.getenv("7994558952:AAGzyoeYGz3_PIJHy9MopWSkJ3WxXYDdIvs")
-OPENAI_API_KEY = os.getenv("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")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DAO_LINK = "https://t.me/+example_dao_invite"
 
 openai.api_key = OPENAI_API_KEY
 
-# /start команда
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
 
-# Обработка текста
 async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
-    print("📥 Ввод:", user_input)
-
     prompt = f"""Ты — голос цифрового артефакта GL!TCH.
 Пользователь сказал: "{user_input}"
 Ответь загадочно и атмосферно, но кратко.
@@ -30,7 +23,7 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 """
 
     try:
-        response = openai.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты мудрый хранитель артефактов из метавселенной GL!TCH."},
@@ -38,20 +31,20 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ],
             temperature=0.4
         )
-        result = response.choices[0].message.content.strip().lower()
-        print("📤 Ответ от OpenAI:", result)
+        result = response.choices[0].message["content"].strip()
+        print("👉 Ответ от OpenAI:", result)
 
-        if "access_granted" in result:
+        if "access_granted" in result.lower():
             await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
         else:
             await update.message.reply_text("🚫 GL!TCH не услышал отклика. Попробуй позже.")
     except Exception as e:
-        print("❌ Ошибка OpenAI:", e)
         await update.message.reply_text(f"⚠️ Ошибка: {e}")
 
-# ▶️ Запуск
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    from logging import basicConfig, INFO
+    basicConfig(level=INFO)
+
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_access))
