@@ -7,22 +7,21 @@ from telegram.ext import (
     ContextTypes, filters
 )
 
-# 🔑 Получение токенов
+# 🔐 Токены из окружения
 TELEGRAM_TOKEN = os.getenv("7994558952:AAGzyoeYGz3_PIJHy9MopWSkJ3WxXYDdIvs")
 OPENAI_API_KEY = os.getenv("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")
 DAO_LINK = "https://t.me/+example_dao_invite"
 
-# 🔧 Настройка OpenAI
 openai.api_key = OPENAI_API_KEY
 
-# 🚀 Команда /start
+# /start команда
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("GL!TCH активирован. Что ты почувствовал, когда увидел его?")
 
-# 🧠 Проверка фразы и ответ от OpenAI
+# Обработка текста
 async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
-    print("📥 Входящий текст:", user_input)  # лог запроса
+    print("📥 Ввод:", user_input)
 
     prompt = f"""Ты — голос цифрового артефакта GL!TCH.
 Пользователь сказал: "{user_input}"
@@ -31,7 +30,7 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 """
 
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты мудрый хранитель артефактов из метавселенной GL!TCH."},
@@ -39,16 +38,16 @@ async def check_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ],
             temperature=0.4
         )
-        result = response.choices[0].message["content"].strip().lower()
-        print("📤 Ответ от OpenAI:", result)  # лог ответа
+        result = response.choices[0].message.content.strip().lower()
+        print("📤 Ответ от OpenAI:", result)
 
         if "access_granted" in result:
             await update.message.reply_text(f"✅ Ты прошёл. GL!TCH помнит тебя.\n{DAO_LINK}")
         else:
             await update.message.reply_text("🚫 GL!TCH не услышал отклика. Попробуй позже.")
     except Exception as e:
+        print("❌ Ошибка OpenAI:", e)
         await update.message.reply_text(f"⚠️ Ошибка: {e}")
-        print("❌ Ошибка OpenAI:", e)  # лог ошибки
 
 # ▶️ Запуск
 if __name__ == "__main__":
