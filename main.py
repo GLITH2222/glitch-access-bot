@@ -8,8 +8,8 @@ from telegram.ext import (
 )
 
 # 🔑 Получение токенов
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+TELEGRAM_TOKEN = os.getenv("7994558952:AAGzyoeYGz3_PIJHy9MopWSkJ3WxXYDdIvs")
+OPENAI_API_KEY = os.getenv("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")
 DAO_LINK = "https://t.me/+example_dao_invite"
 
 # 🔧 Настройка OpenAI
